@@ -29,11 +29,11 @@ def unpickle(file, num_samples=10000):
     return data[b'data'][:num_samples, :], to_categorical(data[b'labels'][:num_samples], NUM_CLASSES)
 
 
-def get_data(data_path="data", num_samples=60000, dataset="training"):
+def get_data(data_path="data", num_samples=50000, dataset="training"):
     '''
     Function that reads and returns the required training or testing data
     :param data_path: string: the relative folder path to where the data lies (default: ./data)
-    :param num_samples: int: number of samples required (MAX 60000)
+    :param num_samples: int: number of samples required (MAX 50000)
     :param dataset: string: training or testing, default is training
     :return: two numpy arrays 1 containing data and other containing corresponding labels.
              data shape = [num_samples, 32, 32, 3] and labels shape = [num_samples, 10] for cifar-10 data
@@ -44,7 +44,7 @@ def get_data(data_path="data", num_samples=60000, dataset="training"):
     if dataset == "training" and num_samples>MAX_TRAINING_SAMPLES:
         num_samples = MAX_TRAINING_SAMPLES
     data = np.zeros(shape=(num_samples, NUM_DIMENSIONS))
-    labels = np.zeros(shape=(num_samples, NUM_CLASSES))
+    labels = np.zeros(shape=(NUM_CLASSES, num_samples))
     num_batches = num_samples//SAMPLES_PER_BATCH + 1
     if num_batches > TOTAL_BATCHES:
         num_batches = TOTAL_BATCHES
@@ -55,11 +55,10 @@ def get_data(data_path="data", num_samples=60000, dataset="training"):
         if remaining > SAMPLES_PER_BATCH:
             ret_val = unpickle(file, SAMPLES_PER_BATCH)
             data[_*SAMPLES_PER_BATCH: SAMPLES_PER_BATCH*(_+1)] = ret_val[0]
-            labels[_*SAMPLES_PER_BATCH: SAMPLES_PER_BATCH*(_+1)] = ret_val[1]
+            labels[:, _*SAMPLES_PER_BATCH: SAMPLES_PER_BATCH*(_+1)] = ret_val[1]
         else:
             ret_val = unpickle(file, remaining)
             data[_*SAMPLES_PER_BATCH:] = ret_val[0]
-            labels[_*SAMPLES_PER_BATCH:] = ret_val[1]
+            labels[:, _*SAMPLES_PER_BATCH:] = ret_val[1]
         remaining = remaining - SAMPLES_PER_BATCH
     return data.reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1).astype(np.float32), labels
-

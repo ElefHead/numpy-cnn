@@ -12,6 +12,20 @@ def show_image(image):
     plt.show()
 
 
+def plot_graph(Y, X=None, title=None, xlabel=None, ylabel=None):
+    if X is None:
+        plt.plot(Y)
+    else:
+        plt.plot(X, Y)
+    if title is not None:
+        plt.title(title)
+    if xlabel is not None:
+        plt.xlabel(xlabel)
+    if ylabel is not None:
+        plt.ylabel(ylabel)
+    plt.show()
+
+
 def to_categorical(labels, num_classes, axis=0):
     '''
     Function to one-hot-encode the labels
@@ -20,7 +34,7 @@ def to_categorical(labels, num_classes, axis=0):
     :param axis:[int Default=0]: decides row matrix or column matrix. if 0 then column matrix, else row
     :return: numpy array of ints: one-hot-encoded labels
     '''
-    ohe_labels = np.zeros((len(labels), num_classes)) if axis == 0 else np.zeros((num_classes, len(labels)))
+    ohe_labels = np.zeros((len(labels), num_classes)) if axis != 0 else np.zeros((num_classes, len(labels)))
     for _ in range(len(labels)):
         if axis == 0:
             ohe_labels[labels[_], _] = 1
