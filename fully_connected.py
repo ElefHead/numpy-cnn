@@ -5,6 +5,10 @@ from filereader import get_data
 
 class Model:
     def __init__(self, parameters):
+        '''
+
+        :param parameters:
+        '''
         self.parameters = parameters
         self.activation = {
             'elu': self.elu,
@@ -24,45 +28,96 @@ class Model:
 
     @staticmethod
     def softmax(Z):
+        '''
+        A function to compute the softmax activation
+        :param Z:[numpy array]: Array of floats
+        :return:[numpy array]: Array of floats, after application of softmax function to Z
+        '''
         Z_ = Z - Z.max()
         e = np.exp(Z_)
         return e / np.sum(e, axis=0, keepdims=True)
 
     @staticmethod
     def d_softmax(Z):
+        '''
+        A function to compute the derivative values of softmax activation
+        :param Z:[numpy array]: Array of floats
+        :return:[numpy array]: Array of floats, values corresponding to the derivative of softmax activation on Z
+        '''
         return Z * (1 - Z)
 
     @staticmethod
     def elu(Z, alpha=1.2):
+        '''
+
+        :param Z:
+        :param alpha:
+        :return:
+        '''
         return np.where(Z >= 0, Z, alpha*(np.exp(Z) - 1))
 
     @staticmethod
     def d_elu(Z, alpha=1.2):
+        '''
+
+        :param Z:
+        :param alpha:
+        :return:
+        '''
         return (Z >= 0).astype(np.float32) + (Z < 0).astype(np.float32) * (Model.elu(Z) + alpha)
 
     @staticmethod
     def cross_entropy_loss(labels, predictions, epsilon=1e-8):
+        '''
+
+        :param labels:
+        :param predictions:
+        :param epsilon:
+        :return:
+        '''
         predictions /= np.sum(predictions, axis=0, keepdims=True)
         predictions = np.clip(predictions, epsilon, 1 - epsilon)
         return -np.sum(labels * np.log(predictions))
 
     @staticmethod
     def d_cross_entropy_loss(labels, predictions):
+        '''
+
+        :param labels:
+        :param predictions:
+        :return:
+        '''
         return labels - predictions
 
     def train(self, data, labels, epochs=50, learning_rate=0.001, batch_size=256, l2_penalty=1e-4,
               optimization="adam", amsgrad=True, epsilon=1e-8, beta1=0.9, beta2=0.999, correct_bias=False):
+        '''
+
+        :param data:
+        :param labels:
+        :param epochs:
+        :param learning_rate:
+        :param batch_size:
+        :param l2_penalty:
+        :param optimization:
+        :param amsgrad:
+        :param epsilon:
+        :param beta1:
+        :param beta2:
+        :param correct_bias:
+        :return:
+        '''
         self.batch_size = batch_size
         if optimization is not None and optimization != "adam":
             amsgrad = False if amsgrad else amsgrad
             correct_bias = False if not amsgrad else correct_bias
         iter = 1
-        costs = []
+        costs_per_iter, costs_per_epoch = [], []
         momentum_cache, rmsprop_cache = {}, {}
         for epoch in range(epochs):
             for i, (x_batch, y_batch) in enumerate(get_batches(data, labels)):
                 prediction, cache = self.forward_propagate(x_batch, save_cache=True)
-                costs.append(self.cross_entropy_loss(y_batch, prediction))
+                costs_per_iter.append(self.cross_entropy_loss(y_batch, prediction))
 
                 grads = self.back_propagate(x_batch, y_batch, prediction, cache)
                 if optimization == "adam":
@@ -73,10 +128,16 @@ class Model:
                                  rmsprop_cache=rmsprop_cache, learning_rate=learning_rate, l2_penalty=l2_penalty,
                                  epsilon=epsilon, correct_bias=correct_bias, iter=iter)
             iter+=batch_size
+            costs_per_epoch.append(self.cross_entropy_loss(labels, self.predict(data)))
             print("Epoch {}: Training accuracy = {}".format(epoch+1, self.evaluate(labels, self.predict(data))))
-        return costs
+        return costs_per_iter, costs_per_epoch
 
     def predict(self, data):
+        '''
+        Function to make a prediction based on the trained model, given the data
+        :param data:[numpy array]: test data, for cifar10 the shape is [3072, -1]
+        :return:[numpy array]: predictions of shape [10, -1] for cifar10
+        '''
         predictions = np.zeros(shape=(self.parameters['num_classes'], data.shape[1]))
         num_batches = data.shape[1]//self.batch_size
         for batch_num, x_batch in enumerate(get_batches(data, shuffle=False)):
@@ -88,6 +149,13 @@ class Model:
         return predictions
 
     def forward_propagate(self, X, save_cache=False):
+        '''
+        A function to output of the network, given the input.
+        :param X:[numpy array]: Training data
+        :param save_cache:[boolean default=False]: Set to true while training, for a cache to be used for back propagation.
+        :return:[tuple(numpy array, dict) or just numpy array]: Output of the network and optionally, the cache of
+                intermediate values that can be used for computing back propagation terms
+        '''
         cache = {}
         for layer in range(self.parameters['num_layers']):
             if layer==0:
@@ -105,9 +173,23 @@ class Model:
             return A
 
     def evaluate(self, labels, predictions):
+        '''
+        A function to compute the accuracy of the predictions on a scale of 0-1.
+        :param labels:[numpy array]: Training labels (or testing/validation if available)
+        :param predictions:[numpy array]: Predicted labels
+        :return:[float]: a number between [0, 1] denoting the accuracy of the prediction
+        '''
         return np.mean(np.argmax(labels, axis=0) == np.argmax(predictions, axis=0))
 
     def back_propagate(self, data, labels, prediction, cache):
+        '''
+        A function to compute the back propagation gradients
+        :param data:[numpy array]: The training data
+        :param labels:[numpy array]: The training labels
+        :param prediction:[numpy array]: The prediction based on training data and the parameters
+        :param cache:[dict]: The cache containing all the parameters
+        :return:[dict]: cache containing the back propagated gradients.
+        '''
         grads = {}
         batch_size = data.shape[1]
         d_A = self.d_loss[self.parameters['loss']](labels, prediction)
@@ -122,13 +204,24 @@ class Model:
         return grads
 
     def init_cache(self):
+        '''
+        A function to initialize the gradient descent or optimization caches consistently.
+        :return:[dict]: cache with zero initialized np arrays for each layer.
+        '''
         cache = {}
-        for layer in range(parameters['num_layers']):
-            cache['dW' + str(layer + 1)] = np.zeros_like(parameters['W' + str(layer + 1)])
-            cache['db' + str(layer + 1)] = np.zeros_like(parameters['b' + str(layer + 1)])
+        for layer in range(self.parameters['num_layers']):
+            cache['dW' + str(layer + 1)] = np.zeros_like(self.parameters['W' + str(layer + 1)])
+            cache['db' + str(layer + 1)] = np.zeros_like(self.parameters['b' + str(layer + 1)])
         return cache
 
     def momentum(self, grads, momentum_cache={}, beta=0.9):
+        '''
+        A function to compute the momentum exponentially weighted average [Ning Quian https://doi.org/10.1016/S0893-6080(98)00116-6]
+        :param grads:[dict]: cache of gradients calculated based on back propagation.
+        :param momentum_cache:[dict]: cache of momentum exponentially weighted average terms
+        :param beta:[float default=0.9]: momentum beta value
+        :return:[dict]: cache of updated momentum exponentially weighted average terms
+        '''
         if not momentum_cache:
             momentum_cache = self.init_cache()
 
@@ -140,6 +233,14 @@ class Model:
         return momentum_cache
 
     def rmsprop(self, grads, rmsprop_cache={}, beta=0.999, amsgrad=False):
+        '''
+        A function to compute the rmsprop exponentially weighted average [unpublished Hinton et al. (revealed in Coursera)]
+        :param grads:[dict]: cache of gradients calculated based on back propagation.
+        :param rmsprop_cache:[dict]: cache of rmsprop exponentially weighted average terms
+        :param beta:[float default=0.999]: rmsprop beta value
+        :param amsgrad[boolean default=False]: set True to apply amsgrad.
+        :return:[dict]: cache of updated rmsprop exponentially weighted average terms
+        '''
         if not rmsprop_cache:
             rmsprop_cache = self.init_cache()
 
@@ -157,22 +258,38 @@ class Model:
         return rmsprop_cache
 
     def apply_grads(self, grads, batch_size=256, optimization=None, momentum_cache=None, rmsprop_cache=None,
-                    learning_rate=0.01, l2_penalty=1e-4, epsilon=1e-8,
+                    learning_rate=0.001, l2_penalty=1e-4, epsilon=1e-8,
                     correct_bias=False, beta1=0.9, beta2=0.999, iter=999):
+        '''
+
+        :param grads:
+        :param batch_size:
+        :param optimization:
+        :param momentum_cache:
+        :param rmsprop_cache:
+        :param learning_rate:
+        :param l2_penalty:
+        :param epsilon:
+        :param correct_bias:
+        :param beta1:
+        :param beta2:
+        :param iter:
+        :return:
+        '''
 
         for layer in range(self.parameters['num_layers']):
             if optimization is None:
                 self.parameters["W" + str(layer + 1)] -= learning_rate*(grads['dW' + str(layer + 1)] +
-                                                                        l2_penalty*parameters["W" + str(layer + 1)])
+                                                                        l2_penalty*self.parameters["W" + str(layer + 1)])
                 self.parameters["b" + str(layer + 1)] -= learning_rate * (grads['db' + str(layer + 1)] +
-                                                                          l2_penalty * parameters["b" + str(layer + 1)])
+                                                                          l2_penalty * self.parameters["b" + str(layer + 1)])
             if optimization == "rmsprop":
                 W_learning_rate = learning_rate/(np.sqrt(rmsprop_cache['dW' + str(layer + 1)]) + epsilon)
                 b_learning_rate = learning_rate/(np.sqrt(rmsprop_cache['db' + str(layer + 1)]) + epsilon)
                 self.parameters["W" + str(layer + 1)] -= W_learning_rate * (grads['dW' + str(layer + 1)] +
-                                                                          l2_penalty * parameters["W" + str(layer + 1)])
+                                                                          l2_penalty * self.parameters["W" + str(layer + 1)])
                 self.parameters["b" + str(layer + 1)] -= b_learning_rate * (grads['db' + str(layer + 1)] +
-                                                                          l2_penalty * parameters["b" + str(layer + 1)])
+                                                                          l2_penalty * self.parameters["b" + str(layer + 1)])
             if optimization == "adam":
                 if correct_bias:
                     W_first_moment = momentum_cache['dW' + str(layer + 1)]/(1 - beta1**iter)
@@ -189,20 +306,26 @@ class Model:
                 b_learning_rate = learning_rate / (np.sqrt(B_second_moment) + epsilon)
 
                 self.parameters["W" + str(layer + 1)] -= W_learning_rate * (W_first_moment +
-                                                                            l2_penalty * parameters[
+                                                                            l2_penalty * self.parameters[
                                                                                 "W" + str(layer + 1)])
                 self.parameters["b" + str(layer + 1)] -= b_learning_rate * (B_first_moment +
-                                                                            l2_penalty * parameters[
+                                                                            l2_penalty * self.parameters[
                                                                                 "b" + str(layer + 1)])
 
 
 def he_initialize(fan_in, fan_out):
+    '''
+    A function from smart initialization of parameters [He et al. https://arxiv.org/abs/1502.01852]
+    :param fan_in: The number of units in previous layer.
+    :param fan_out: The number of units in current layer.
+    :return:[numpy array]: A randomly initialized array of shape [fan_out, fan_in]
+    '''
     return np.random.normal(0, 1, size=(fan_out, fan_in))*np.sqrt(2/fan_in), np.zeros((fan_out, 1))
 
 
 if __name__ == '__main__':
     train_data, train_labels = get_data(num_samples=50000)
-    test_data, test_labels = get_data(num_samples=5, dataset="testing")
+    test_data, test_labels = get_data(num_samples=10000, dataset="testing")
 
     train_data = train_data.reshape(-1, 32*32*3).T/255
     test_data = test_data.reshape(-1, 32*32*3).T/255
@@ -227,5 +350,8 @@ if __name__ == '__main__':
 
     model = Model(parameters=parameters)
 
-    costs = model.train(train_data, train_labels, optimization="adam", learning_rate=1, correct_bias=True)
-    plot_graph(costs, xlabel="Iterations", ylabel="Cost", title="Variation of cost per iteration")
+    costs_per_iter, costs_per_epoch = model.train(train_data, train_labels, optimization="adam", learning_rate=0.001, correct_bias=True)
+    plot_graph(costs_per_iter, xlabel="Iterations", ylabel="Cost", title="Variation of cost per iteration")
+    plot_graph(costs_per_epoch, xlabel="Epochs", ylabel="Cost", title="Variation of cost per epoch")
+
+    print("Testing accuracy = {}".format(model.evaluate(test_labels, model.predict(test_data))))
