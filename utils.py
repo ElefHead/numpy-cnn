@@ -6,13 +6,22 @@ def show_image(image):
     '''
     Function to display one image
     :param image: numpy float array: of shape (32, 32, 3)
-    :return: None. Plots the image
+    :return: Void
     '''
     plt.imshow(image)
     plt.show()
 
 
 def plot_graph(Y, X=None, title=None, xlabel=None, ylabel=None):
+    '''
+    A function to plot a line graph.
+    :param Y: Values for Y axis
+    :param X: Values for X axis(optional)
+    :param title:[string default=None]: Graph title.
+    :param xlabel:[string default=None]: X axis label.
+    :param ylabel:[string default=None]: Y axis label.
+    :return: Void
+    '''
     if X is None:
         plt.plot(Y)
     else:

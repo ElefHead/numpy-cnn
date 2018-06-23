@@ -6,8 +6,14 @@ from filereader import get_data
 class Model:
     def __init__(self, parameters):
         '''
-
-        :param parameters:
+        The constructor function to setup initial values and required functions.
+        :param parameters: A dictionary containing
+                           1. 'num_layers': The number of layers in the network,
+                           2. 'activation': A python list of length=num_layers of strings ('elu' and 'softmax') indicating
+                                         activation of each layer,
+                           3. 'loss': The loss function ('softmax' for softmax loss or categorical cross entropy loss function),
+                           4. 'num_classes': The number of classes or categories in the label,
+                           5. the weights and biases. Weight key = W<layer_number(1 indexed)>, bias key = b<layer_number(1 indexed)>,
         '''
         self.parameters = parameters
         self.activation = {
@@ -49,31 +55,31 @@ class Model:
     @staticmethod
     def elu(Z, alpha=1.2):
         '''
-
-        :param Z:
-        :param alpha:
-        :return:
+        A function to compute the elu(exponential linear unit) activation values.
+        :param Z:[numpy array]: Array of floats, the score values.
+        :param alpha:[float default=1.2]: the value for elu alpha
+        :return:[numpy array]: elu activated values
         '''
         return np.where(Z >= 0, Z, alpha*(np.exp(Z) - 1))
 
     @staticmethod
     def d_elu(Z, alpha=1.2):
         '''
-
-        :param Z:
-        :param alpha:
-        :return:
+        A function to compute the derivative of elu(exponential linear unit) activation values.
+        :param Z:[numpy array]: Array of floats, the score values.
+        :param alpha:[float default=1.2]: the value for elu alpha
+        :return:[numpy array]: the required derivative values
         '''
         return (Z >= 0).astype(np.float32) + (Z < 0).astype(np.float32) * (Model.elu(Z) + alpha)
 
     @staticmethod
     def cross_entropy_loss(labels, predictions, epsilon=1e-8):
         '''
-
-        :param labels:
-        :param predictions:
-        :param epsilon:
-        :return:
+        The function to compute the categorical cross entropy loss, given training labels and prediction
+        :param labels:[numpy array]: Training labels
+        :param predictions:[numpy array]: Predicted labels
+        :param epsilon:[float default=1e-8]: A small value for applying clipping for stability
+        :return:[float]: The computed value of loss.
         '''
         predictions /= np.sum(predictions, axis=0, keepdims=True)
         predictions = np.clip(predictions, epsilon, 1 - epsilon)
@@ -82,30 +88,30 @@ class Model:
     @staticmethod
     def d_cross_entropy_loss(labels, predictions):
         '''
-
-        :param labels:
-        :param predictions:
-        :return:
+        The function to compute the derivative values of categorical cross entropy values, given labels and prediction
+        :param labels:[numpy array]: Training labels
+        :param predictions:[numpy array]: Predicted labels
+        :return:[numpy array]: The computed derivatives of categorical cross entropy function.
         '''
         return labels - predictions
 
     def train(self, data, labels, epochs=50, learning_rate=0.001, batch_size=256, l2_penalty=1e-4,
               optimization="adam", amsgrad=True, epsilon=1e-8, beta1=0.9, beta2=0.999, correct_bias=False):
         '''
-
-        :param data:
-        :param labels:
-        :param epochs:
-        :param learning_rate:
-        :param batch_size:
-        :param l2_penalty:
-        :param optimization:
-        :param amsgrad:
-        :param epsilon:
-        :param beta1:
-        :param beta2:
-        :param correct_bias:
-        :return:
+        The function to train the neural network given the data and labels.
+        :param data:[numpy array]: The training data.
+        :param labels:[numpy array]: The training labels.
+        :param epochs:[int default=50]: number of epochs.
+        :param learning_rate:[float default=0.001]: The learning rate eta.
+        :param batch_size:[int default=256]: The size of each batch.
+        :param l2_penalty:[float default=1e-4]: The l2 regularization penalty.
+        :param optimization:[string or None default="adam"]: Indicating the optimization function to be used(adam or rmsprop or None).
+        :param amsgrad:[boolean default=True]: Set to true to apply amsgrad update to adam.
+        :param epsilon:[float default=1e-8]: adam epsilon value.
+        :param beta1:[float default=0.9]: momentum beta value.
+        :param beta2:[float default=0.999]: adam beta value for squared exponential weighted average.
+        :param correct_bias:[boolean default=False]: Set to true to apply adam bias correction.
+        :return: tuple(costs_per_iter(list of loss per iteration on batch data), cost_per_epoch(list of loss per epoch on whole data)).
         '''
         self.batch_size = batch_size
         if optimization is not None and optimization != "adam":
@@ -218,9 +224,9 @@ class Model:
         '''
         A function to compute the momentum exponentially weighted average [Ning Quian https://doi.org/10.1016/S0893-6080(98)00116-6]
         :param grads:[dict]: cache of gradients calculated based on back propagation.
-        :param momentum_cache:[dict]: cache of momentum exponentially weighted average terms
-        :param beta:[float default=0.9]: momentum beta value
-        :return:[dict]: cache of updated momentum exponentially weighted average terms
+        :param momentum_cache:[dict]: cache of momentum exponentially weighted average terms.
+        :param beta:[float default=0.9]: momentum beta value.
+        :return:[dict]: cache of updated momentum exponentially weighted average terms.
         '''
         if not momentum_cache:
             momentum_cache = self.init_cache()
@@ -236,9 +242,9 @@ class Model:
         '''
         A function to compute the rmsprop exponentially weighted average [unpublished Hinton et al. (revealed in Coursera)]
         :param grads:[dict]: cache of gradients calculated based on back propagation.
-        :param rmsprop_cache:[dict]: cache of rmsprop exponentially weighted average terms
-        :param beta:[float default=0.999]: rmsprop beta value
-        :param amsgrad[boolean default=False]: set True to apply amsgrad.
+        :param rmsprop_cache:[dict]: cache of rmsprop exponentially weighted average terms.
+        :param beta:[float default=0.999]: rmsprop beta value.
+        :param amsgrad:[boolean default=False]: set True to apply amsgrad.
         :return:[dict]: cache of updated rmsprop exponentially weighted average terms
         '''
         if not rmsprop_cache:
@@ -261,20 +267,20 @@ class Model:
                     learning_rate=0.001, l2_penalty=1e-4, epsilon=1e-8,
                     correct_bias=False, beta1=0.9, beta2=0.999, iter=999):
         '''
-
-        :param grads:
-        :param batch_size:
-        :param optimization:
-        :param momentum_cache:
-        :param rmsprop_cache:
-        :param learning_rate:
-        :param l2_penalty:
-        :param epsilon:
-        :param correct_bias:
-        :param beta1:
-        :param beta2:
-        :param iter:
-        :return:
+        A function to update weights based on calculated gradients and optimization caches.
+        :param grads:[dict]: cache containing back propagation gradients.
+        :param batch_size:[int default=256]: The size of each batch.
+        :param optimization:[string or None default="adam"]: Indicating the optimization function to be used(adam or rmsprop or None).
+        :param momentum_cache:[dict]: cache of momentum exponentially weighted average terms.
+        :param rmsprop_cache:[dict]: cache of rmsprop exponentially weighted average terms.
+        :param learning_rate:learning_rate:[float default=0.001]: The learning rate eta.
+        :param l2_penalty:[float default=1e-4]: The l2 regularization penalty.
+        :param epsilon:[float default=1e-8]: adam epsilon value.
+        :param correct_bias:[boolean default=False]: Set to true to apply adam bias correction.
+        :param beta1:[float default=0.9]: momentum beta value.
+        :param beta2:[float default=0.999]: adam beta value for squared exponential weighted average.
+        :param iter:[int default=999]: indicates the iteration number.
+        :return: Void
         '''
 
         for layer in range(self.parameters['num_layers']):
