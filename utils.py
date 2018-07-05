@@ -27,7 +27,7 @@ def pad_inputs(X, pad):
     :param pad:[int]: number of columns to pad
     :return:[numpy array]: padded dataset
     '''
-    return np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant')
+    return np.pad(X, ((0, 0), (pad[0], pad[0]), (pad[1], pad[1]), (0, 0)), 'constant')
 
 
 def show_image(image, title=None, cmap=None):

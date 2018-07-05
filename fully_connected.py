@@ -19,7 +19,7 @@ class FullyConnected:
 
     def forward_propagate(self, X, save_cache=False):
         if 'W' not in self.params:
-            self.params['W'], self.params['b'] = he_normal(X.shape[0], self.params['units'])
+            self.params['W'], self.params['b'] = he_normal((X.shape[0], self.params['units']))
         Z = np.dot(self.params['W'], X) + self.params['b']
         if save_cache:
             self.cache['A'] = X
