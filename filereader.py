@@ -61,4 +61,4 @@ def get_data(data_path="data", num_samples=50000, dataset="training"):
             data[_*SAMPLES_PER_BATCH:] = ret_val[0]
             labels[:, _*SAMPLES_PER_BATCH:] = ret_val[1]
         remaining = remaining - SAMPLES_PER_BATCH
-    return data.reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1).astype(np.float32), labels
+    return data.reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1).astype(np.float32), labels.T
