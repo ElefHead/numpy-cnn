@@ -40,7 +40,7 @@ class Convolution:
 
         if 'W' not in self.params:
             shape = (filter_shape_h, filter_shape_w, prev_channels, self.params['filters'])
-            self.params['W'] = glorot_uniform(shape=shape)
+            self.params['W'], self.params['b'] = glorot_uniform(shape=shape)
 
         if self.params['padding'] == 'same':
             pad_h = int(((prev_height - 1)*self.params['stride'] + filter_shape_h - prev_height) / 2)
@@ -70,7 +70,7 @@ class Convolution:
 
                         x_slice = x[vert_start: vert_end, horiz_start: horiz_end, :]
 
-                        Z[i, h, w, c] = self.conv_single_step(x_slice, self.params['W'][:,:,:,c],
+                        Z[i, h, w, c] = self.conv_single_step(x_slice, self.params['W'][:, :, :, c],
                                                               self.params['b'][:, :, :, c])
 
         if save_cache:
@@ -84,3 +84,4 @@ class Convolution:
 
     def apply_grads(self):
         pass
+
