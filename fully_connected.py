@@ -1,33 +1,32 @@
 import numpy as np
-from activation import ACTIVATE as activate, D_ACTIVATE as d_activate
 from initializers import he_normal
 
 np.random.seed(0)
 
 
 class FullyConnected:
-    def __init__(self, units=200, activation='elu'):
-        self.params = {
-            'units': units,
-            'activation': activate[activation],
-            'd_activation': d_activate[activation]
-        }
+    def __init__(self, units=200):
+        self.units = units
+        self.params = {}
         self.cache = {}
         self.grads = {}
         self.momentum_cache = {}
         self.rmsprop_cache = {}
+        self.has_units = True
+
+    def has_weights(self):
+        return self.has_units
 
     def forward_propagate(self, X, save_cache=False):
         if 'W' not in self.params:
-            self.params['W'], self.params['b'] = he_normal((X.shape[0], self.params['units']))
+            self.params['W'], self.params['b'] = he_normal((X.shape[0], self.units))
         Z = np.dot(self.params['W'], X) + self.params['b']
         if save_cache:
             self.cache['A'] = X
-            self.cache['Z'] = Z
-        return self.params['activation'](Z)
+        return Z
 
-    def back_propagate(self, dA, batch_size=256):
-        dZ = dA * self.params['d_activation'](self.cache['Z'])
+    def back_propagate(self, dZ):
+        batch_size = dZ.shape[1]
         self.grads['dW'] = np.dot(dZ, self.cache['A'].T) / batch_size
         self.grads['db'] = np.sum(dZ, axis=1, keepdims=True)
         return np.dot(self.params['W'].T, dZ)

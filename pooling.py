@@ -3,14 +3,26 @@ import numpy as np
 
 class Pooling:
     def __init__(self, kernel_shape=(3, 3), stride=1, mode="max"):
+        '''
+
+        :param kernel_shape:
+        :param stride:
+        :param mode:
+        '''
         self.params = {
             'kernel_shape': kernel_shape,
             'stride': stride,
-            'mode': max
+            'mode': mode
         }
         self.cache = {}
 
     def forward_propagate(self, X, save_cache=False):
+        '''
+
+        :param X:
+        :param save_cache:
+        :return:
+        '''
         (num_data_points, prev_height, prev_width, prev_channels) = X.shape
         filter_shape_h, filter_shape_w = self.params['kernel_shape']
 

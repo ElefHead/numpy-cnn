@@ -1,15 +1,13 @@
 import numpy as np
 from utils import pad_inputs
-from activation import ACTIVATE as activate, D_ACTIVATE as d_activate
 from initializers import glorot_uniform
 
 
 class Convolution:
-    def __init__(self, filters, kernel_shape=(3,3), padding='valid', stride=1, activation='relu'):
+    def __init__(self, filters, kernel_shape=(3,3), padding='valid', stride=1):
         self.params = {
             'filters': filters,
             'padding': padding,
-            'activation': activation,
             'kernel_shape': kernel_shape,
             'stride': stride
         }
@@ -77,7 +75,7 @@ class Convolution:
             self.cache['A'] = X
             self.cache['Z'] = Z
 
-        return activate[self.params['activation']](Z)
+        return Z
 
     def back_propagate(self):
         pass
