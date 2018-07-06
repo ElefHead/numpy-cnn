@@ -1,8 +1,11 @@
-from utilities.filereader import get_data
 from layers.fully_connected import FullyConnected
 from layers.flatten import Flatten
 from layers.activation import Elu, Softmax
-from utilities.utils import cross_entropy_loss, d_cross_entropy_loss, get_batches, evaluate
+
+from utilities.filereader import get_data
+from utilities.utils import get_batches, evaluate
+
+from loss.losses import CategoricalCrossEntropy
 
 import numpy as np
 np.random.seed(0)
@@ -20,7 +23,7 @@ def train(data, labels, model, batch_size=256, epochs=50,
             for layer in model:
                 batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
 
-            dA = d_cross_entropy_loss(y_batch, batch_preds)
+            dA = CategoricalCrossEntropy.compute_derivative(y_batch, batch_preds)
             for layer in reversed(model):
                 dA = layer.back_propagate(dA)
                 if layer.has_weights():
@@ -33,7 +36,7 @@ def train(data, labels, model, batch_size=256, epochs=50,
                     layer.apply_grads(optimization=optimization, correct_bias=True, iter=iter)
         predictions = predict(model, data)
         print("Training accuracy (epoch {}): {}".format(epoch+1, evaluate(labels, predictions)))
-        print('loss: ', cross_entropy_loss(labels, predictions))
+        print('loss: ', CategoricalCrossEntropy.compute_loss(labels, predictions))
         iter += batch_size
     return model
 
