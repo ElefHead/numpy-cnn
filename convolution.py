@@ -73,11 +73,10 @@ class Convolution:
 
         if save_cache:
             self.cache['A'] = X
-            self.cache['Z'] = Z
 
         return Z
 
-    def back_propagate(self):
+    def back_propagate(self, dZ):
         pass
 
     def apply_grads(self):

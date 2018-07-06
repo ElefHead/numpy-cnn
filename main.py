@@ -2,6 +2,7 @@ from filereader import get_data
 from fully_connected import FullyConnected
 from convolution import Convolution
 from pooling import Pooling
+from flatten import Flatten
 from activation import Relu, Softmax
 
 from utils import get_batches, evaluate
@@ -15,16 +16,22 @@ BATCH_SIZE = 256
 
 
 def predict(model, data):
-    predictions = data
-    for layer in model:
-        print("Type = {}, Input shape = {}".format(type(layer), str(predictions.shape)))
-        predictions = layer.forward_propagate(predictions, save_cache=False)
+    predictions = np.zeros(shape=(NUM_CLASSES, data.shape[0]))
+    num_batches = data.shape[0] // BATCH_SIZE
+    for batch_num, x_batch in enumerate(get_batches(data, shuffle=False)):
+        batch_preds = x_batch.copy()
+        for layer in model:
+            batch_preds = layer.forward_propagate(batch_preds, save_cache=False)
+        if batch_num <= num_batches - 1:
+            predictions[:, batch_num * BATCH_SIZE:(batch_num + 1) * BATCH_SIZE] = batch_preds
+        else:
+            predictions[:, batch_num * BATCH_SIZE:] = batch_preds
     return predictions
 
 
 if __name__ == '__main__':
-    train_data, train_labels = get_data(num_samples=200)
-    test_data, test_labels = get_data(num_samples=100, dataset="testing")
+    train_data, train_labels = get_data(num_samples=50000)
+    test_data, test_labels = get_data(num_samples=10000, dataset="testing")
 
     print("Train data shape: {}, {}".format(train_data.shape, train_labels.shape))
     print("Test data shape: {}, {}".format(test_data.shape, test_labels.shape))
@@ -32,9 +39,11 @@ if __name__ == '__main__':
     model = [
         Convolution(filters=12, padding='same'),
         Relu(),
-        Pooling(mode='max'),
+        Pooling(mode='max', kernel_shape=(2, 2), stride=2),
+        Flatten(),
         FullyConnected(units=10),
         Softmax()
     ]
 
-    predict(model, train_data)
+    test_preds = predict(model, test_data)
+    print(evaluate(test_labels, test_preds))
