@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 from os import path
-from utils import to_categorical
+from utilities.utils import to_categorical
 
 
 TOTAL_BATCHES = 5

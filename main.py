@@ -1,11 +1,11 @@
-from filereader import get_data
-from fully_connected import FullyConnected
-from convolution import Convolution
-from pooling import Pooling
-from flatten import Flatten
-from activation import Relu, Softmax
+from utilities.filereader import get_data
+from layers.fully_connected import FullyConnected
+from layers.convolution import Convolution
+from layers.pooling import Pooling
+from layers.flatten import Flatten
+from layers.activation import Relu, Softmax
 
-from utils import get_batches, evaluate
+from utilities.utils import get_batches, evaluate
 
 import numpy as np
 np.random.seed(0)

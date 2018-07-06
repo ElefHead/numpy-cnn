@@ -15,6 +15,10 @@ class Pooling:
             'mode': mode
         }
         self.cache = {}
+        self.has_units = False
+
+    def has_weights(self):
+        return self.has_units
 
     def forward_propagate(self, X, save_cache=False):
         '''

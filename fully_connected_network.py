@@ -1,8 +1,8 @@
-from filereader import get_data
-from fully_connected import FullyConnected
-from flatten import Flatten
-from utils import cross_entropy_loss, d_cross_entropy_loss, get_batches, evaluate
-from activation import Elu, Softmax
+from utilities.filereader import get_data
+from layers.fully_connected import FullyConnected
+from layers.flatten import Flatten
+from layers.activation import Elu, Softmax
+from utilities.utils import cross_entropy_loss, d_cross_entropy_loss, get_batches, evaluate
 
 import numpy as np
 np.random.seed(0)

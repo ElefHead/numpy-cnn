@@ -1,5 +1,5 @@
 import numpy as np
-from initializers import he_normal
+from utilities.initializers import he_normal
 
 np.random.seed(0)
 
