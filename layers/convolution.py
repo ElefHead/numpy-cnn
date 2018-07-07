@@ -55,6 +55,8 @@ class Convolution:
             n_H = int((prev_height - filter_shape_h) / self.params['stride']) + 1
             n_W = int((prev_width - filter_shape_w) / self.params['stride']) + 1
 
+        self.params['pad_h'], self.params['pad_w'] = pad_h, pad_w
+
         Z = np.zeros(shape=(num_data_points, n_H, n_W, self.params['filters']))
 
         X_pad = pad_inputs(X, (pad_h, pad_w))
@@ -63,12 +65,12 @@ class Convolution:
             x = X_pad[i]
             for h in range(n_H):
                 for w in range(n_W):
-                    for c in range(self.params['filters']):
+                    vert_start = self.params['stride'] * h
+                    vert_end = vert_start + filter_shape_h
+                    horiz_start = self.params['stride'] * w
+                    horiz_end = horiz_start + filter_shape_w
 
-                        vert_start = self.params['stride'] * h
-                        vert_end = vert_start + filter_shape_h
-                        horiz_start = self.params['stride'] * w
-                        horiz_end = horiz_start + filter_shape_w
+                    for c in range(self.params['filters']):
 
                         x_slice = x[vert_start: vert_end, horiz_start: horiz_end, :]
 
@@ -86,9 +88,39 @@ class Convolution:
         :param dZ:
         :return:
         '''
-        batch_size = dZ.shape[0]
+        A = self.cache['A']
+        filter_shape_h, filter_shape_w = self.params['kernel_shape']
+        pad_h, pad_w = self.params['pad_h'], self.params['pad_w']
 
+        (num_data_points, prev_height, prev_width, prev_channels) = A.shape
+
+        dA = np.zeros((num_data_points, prev_height, prev_width, prev_channels))
         self.grads = self.init_cache()
+
+        A_pad = pad_inputs(A, (pad_h, pad_w))
+        dA_pad = pad_inputs(dA, (pad_h, pad_w))
+
+        for i in range(num_data_points):
+            a_pad = A_pad[i]
+            da_pad = dA_pad[i]
+
+            for h in range(prev_height):
+                for w in range(prev_width):
+
+                    vert_start = self.params['stride'] * h
+                    vert_end = vert_start + filter_shape_h
+                    horiz_start = self.params['stride'] * w
+                    horiz_end = horiz_start + filter_shape_w
+
+                    for c in range(self.params['filters']):
+                        a_slice = a_pad[vert_start: vert_end, horiz_start: horiz_end, :]
+
+                        da_pad[vert_start:vert_end, horiz_start:horiz_end, :] += self.params['W'][:, :, :, c] * dZ[i, h, w, c]
+                        self.grads['dW'][:, :, :, c] += a_slice * dZ[i, h, w, c]
+                        self.grads['db'][:, :, :, c] += dZ[i, h, w, c]
+            dA[i, :, :, :] = da_pad[pad_h: -pad_h, pad_w: -pad_w, :]
+
+        return dA
 
     def init_cache(self):
         cache = dict()
@@ -139,4 +171,3 @@ class Convolution:
 
             self.params['W'] -= W_learning_rate * (W_first_moment + l2_penalty * self.params['W'])
             self.params['b'] -= b_learning_rate * (b_first_moment + l2_penalty * self.params['b'])
-

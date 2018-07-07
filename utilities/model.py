@@ -16,7 +16,7 @@ class Model:
     def set_loss(self, loss):
         self.loss = loss
 
-    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam', verbose=False):
+    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam'):
         if self.loss is None:
             raise RuntimeError("Set loss first using 'Model.set_loss(<loss>)'")
 
@@ -24,16 +24,13 @@ class Model:
 
         iter = 1
         for epoch in range(epochs):
+            print('Running Epoch:', epoch + 1)
             for i, (x_batch, y_batch) in enumerate(get_batches(data, labels)):
                 batch_preds = x_batch.copy()
                 for layer in self.model:
                     batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
-                if verbose:
-                    print('loss = {}'.format(self.loss.compute_loss(y_batch, batch_preds)))
-                    print('batch accuracy (epoch {}, batch {}) = {}'.format(epoch+1, i+1, str(evaluate(y_batch, batch_preds))))
                 dA = self.loss.compute_derivative(y_batch, batch_preds)
                 for layer in reversed(self.model):
-                    print('layer: {}, dA shape: {}'.format(str(type(layer)), str(dA.shape)))
                     dA = layer.back_propagate(dA)
                     if layer.has_weights():
                         if optimization == 'adam':

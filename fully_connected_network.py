@@ -34,7 +34,7 @@ if __name__ == '__main__':
     )
 
     model.set_loss(CategoricalCrossEntropy)
-    model.train(train_data, train_labels, verbose=True)
+    model.train(train_data, train_labels)
 
     print('Testing accuracy = {}'.format(model.evaluate(test_data, test_labels)))
 
