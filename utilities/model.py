@@ -8,9 +8,44 @@ class Model:
         self.model = model
         self.num_classes = 0
         self.batch_size = 0
+        self.loss = None
 
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
+
+    def set_loss(self, loss):
+        self.loss = loss
+
+    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam', verbose=False):
+        if self.loss is None:
+            raise RuntimeError("Set loss first using 'Model.set_loss(<loss>)'")
+
+        self.set_batch_size(batch_size)
+
+        iter = 1
+        for epoch in range(epochs):
+            for x_batch, y_batch in get_batches(data, labels):
+                batch_preds = x_batch.copy()
+                for layer in self.model:
+                    batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
+
+                dA = self.loss.compute_derivative(y_batch, batch_preds)
+                for layer in reversed(self.model):
+                    dA = layer.back_propagate(dA)
+                    if layer.has_weights():
+                        if optimization == 'adam':
+                            layer.momentum()
+                            layer.rmsprop()
+
+                for layer in self.model:
+                    if layer.has_weights():
+                        layer.apply_grads(optimization=optimization, correct_bias=True, iter=iter)
+
+            iter += batch_size
+            if verbose:
+                predictions = self.predict(data)
+                print("Training accuracy (epoch {}): {}".format(epoch + 1, evaluate(labels, predictions)))
+                print('loss: ', self.loss.compute_loss(labels, predictions))
 
     def predict(self, data):
         if self.batch_size == 0:
