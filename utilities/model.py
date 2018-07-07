@@ -1,6 +1,7 @@
 import numpy as np
 
 from utilities.utils import get_batches, evaluate
+from utilities.settings import set_network_name
 
 
 class Model:
@@ -19,6 +20,9 @@ class Model:
 
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
+
+    def set_name(self, name):
+        set_network_name(name)
 
     def train(self, data, labels, batch_size=256, epochs=50, optimization='adam'):
         if self.loss is None:
