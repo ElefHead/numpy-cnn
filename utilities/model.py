@@ -24,13 +24,16 @@ class Model:
 
         iter = 1
         for epoch in range(epochs):
-            for x_batch, y_batch in get_batches(data, labels):
+            for i, (x_batch, y_batch) in enumerate(get_batches(data, labels)):
                 batch_preds = x_batch.copy()
                 for layer in self.model:
                     batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
-
+                if verbose:
+                    print('loss = {}'.format(self.loss.compute_loss(y_batch, batch_preds)))
+                    print('batch accuracy (epoch {}, batch {}) = {}'.format(epoch+1, i+1, str(evaluate(y_batch, batch_preds))))
                 dA = self.loss.compute_derivative(y_batch, batch_preds)
                 for layer in reversed(self.model):
+                    print('layer: {}, dA shape: {}'.format(str(type(layer)), str(dA.shape)))
                     dA = layer.back_propagate(dA)
                     if layer.has_weights():
                         if optimization == 'adam':
@@ -42,10 +45,6 @@ class Model:
                         layer.apply_grads(optimization=optimization, correct_bias=True, iter=iter)
 
             iter += batch_size
-            if verbose:
-                predictions = self.predict(data)
-                print("Training accuracy (epoch {}): {}".format(epoch + 1, evaluate(labels, predictions)))
-                print('loss: ', self.loss.compute_loss(labels, predictions))
 
     def predict(self, data):
         if self.batch_size == 0:
