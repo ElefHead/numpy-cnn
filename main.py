@@ -8,6 +8,7 @@ from utilities.filereader import get_data
 from utilities.model import Model
 
 from loss.losses import CategoricalCrossEntropy
+from optimizers.adam_optimizer import AdamOptimizer
 
 import numpy as np
 np.random.seed(0)
@@ -24,16 +25,17 @@ if __name__ == '__main__':
     print("Test data shape: {}, {}".format(test_data.shape, test_labels.shape))
 
     model = Model(
-        Convolution(filters=12, padding='same'),
+        Convolution(filters=5, padding='same', name='cnn1'),
         Elu(),
-        Pooling(mode='max', kernel_shape=(2, 2), stride=2),
+        Pooling(mode='max', kernel_shape=(2, 2), stride=2, name='pooling1'),
         Flatten(),
-        FullyConnected(units=10),
+        FullyConnected(units=10, name='full1'),
         Softmax()
     )
 
     model.set_loss(CategoricalCrossEntropy)
+    model.set_optimizer(AdamOptimizer())
 
-    model.train(train_data, train_labels.T, epochs=5)
+    model.train(train_data, train_labels.T, epochs=5, save_model=True)
 
     print('Testing accuracy = {}'.format(model.evaluate(test_data, test_labels)))

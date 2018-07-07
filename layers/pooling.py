@@ -1,8 +1,9 @@
 import numpy as np
+from utilities.settings import get_layer_num, inc_layer_num
 
 
 class Pooling:
-    def __init__(self, kernel_shape=(3, 3), stride=1, mode="max"):
+    def __init__(self, kernel_shape=(3, 3), stride=1, mode="max", name=None):
         '''
 
         :param kernel_shape:
@@ -14,8 +15,10 @@ class Pooling:
             'stride': stride,
             'mode': mode
         }
+        self.type = 'pooling'
         self.cache = {}
         self.has_units = False
+        self.name = name
 
     def has_weights(self):
         return self.has_units
@@ -27,6 +30,7 @@ class Pooling:
         :param save_cache:
         :return:
         '''
+
         (num_data_points, prev_height, prev_width, prev_channels) = X.shape
         filter_shape_h, filter_shape_w = self.params['kernel_shape']
 

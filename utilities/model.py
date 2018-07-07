@@ -9,6 +9,7 @@ class Model:
         self.num_classes = 0
         self.batch_size = 0
         self.loss = None
+        self.optimizer = None
 
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
@@ -16,9 +17,15 @@ class Model:
     def set_loss(self, loss):
         self.loss = loss
 
+    def set_optimizer(self, optimizer):
+        self.optimizer = optimizer
+
     def train(self, data, labels, batch_size=256, epochs=50, optimization='adam'):
         if self.loss is None:
-            raise RuntimeError("Set loss first using 'Model.set_loss(<loss>)'")
+            raise RuntimeError("Set loss first using 'model.set_loss(<loss>)'")
+
+        if self.optimizer is None:
+            raise RuntimeError("Set loss first using 'model.set_optimizer(<optimizer>)'")
 
         self.set_batch_size(batch_size)
 
@@ -27,8 +34,8 @@ class Model:
             print('Running Epoch:', epoch + 1)
             for i, (x_batch, y_batch) in enumerate(get_batches(data, labels)):
                 batch_preds = x_batch.copy()
-                for layer in self.model:
-                    batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
+                for num, layer in enumerate(self.model):
+                    batch_preds = layer.forward_propagate(batch_preds, layer_num=num, save_cache=True)
                 dA = self.loss.compute_derivative(y_batch, batch_preds)
                 for layer in reversed(self.model):
                     dA = layer.back_propagate(dA)

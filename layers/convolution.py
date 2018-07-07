@@ -1,10 +1,12 @@
 import numpy as np
+
 from utilities.utils import pad_inputs
 from utilities.initializers import glorot_uniform
+from utilities.settings import get_layer_num, inc_layer_num
 
 
 class Convolution:
-    def __init__(self, filters, kernel_shape=(3,3), padding='valid', stride=1):
+    def __init__(self, filters, kernel_shape=(3,3), padding='valid', stride=1, name=None):
         self.params = {
             'filters': filters,
             'padding': padding,
@@ -16,6 +18,8 @@ class Convolution:
         self.momentum_cache = {}
         self.grads = {}
         self.has_units = True
+        self.name = name
+        self.type = 'conv'
 
     def has_weights(self):
         return self.has_units
@@ -37,6 +41,10 @@ class Convolution:
         :param save_cache:
         :return:
         '''
+        if self.name is None:
+            self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
+            inc_layer_num(self.type)
+
         (num_data_points, prev_height, prev_width, prev_channels) = X.shape
         filter_shape_h, filter_shape_w = self.params['kernel_shape']
 

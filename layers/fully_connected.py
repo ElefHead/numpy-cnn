@@ -1,11 +1,12 @@
 import numpy as np
 from utilities.initializers import he_normal
+from utilities.settings import get_layer_num, inc_layer_num
 
 np.random.seed(0)
 
 
 class FullyConnected:
-    def __init__(self, units=200):
+    def __init__(self, units=200, name=None):
         self.units = units
         self.params = {}
         self.cache = {}
@@ -13,11 +14,17 @@ class FullyConnected:
         self.momentum_cache = {}
         self.rmsprop_cache = {}
         self.has_units = True
+        self.type = 'fc'
+        self.name = name
 
     def has_weights(self):
         return self.has_units
 
     def forward_propagate(self, X, save_cache=False):
+        if self.name is None:
+            self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
+            inc_layer_num(self.type)
+
         if 'W' not in self.params:
             self.params['W'], self.params['b'] = he_normal((X.shape[0], self.units))
         Z = np.dot(self.params['W'], X) + self.params['b']
