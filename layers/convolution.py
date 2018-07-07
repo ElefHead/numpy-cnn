@@ -90,7 +90,6 @@ class Convolution:
 
         self.grads = self.init_cache()
 
-
     def init_cache(self):
         cache = dict()
         cache['dW'] = np.zeros_like(self.params['W'])
