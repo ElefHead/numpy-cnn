@@ -134,26 +134,3 @@ def evaluate(labels, predictions):
     :return:[float]: a number between [0, 1] denoting the accuracy of the prediction
     '''
     return np.mean(np.argmax(labels, axis=0) == np.argmax(predictions, axis=0))
-
-
-def cross_entropy_loss(labels, predictions, epsilon=1e-8):
-    '''
-    The function to compute the categorical cross entropy loss, given training labels and prediction
-    :param labels:[numpy array]: Training labels
-    :param predictions:[numpy array]: Predicted labels
-    :param epsilon:[float default=1e-8]: A small value for applying clipping for stability
-    :return:[float]: The computed value of loss.
-    '''
-    predictions /= np.sum(predictions, axis=0, keepdims=True)
-    predictions = np.clip(predictions, epsilon, 1. - epsilon)
-    return -np.sum(labels * np.log(predictions))
-
-
-def d_cross_entropy_loss(labels, predictions):
-    '''
-    The function to compute the derivative values of categorical cross entropy values, given labels and prediction
-    :param labels:[numpy array]: Training labels
-    :param predictions:[numpy array]: Predicted labels
-    :return:[numpy array]: The computed derivatives of categorical cross entropy function.
-    '''
-    return labels - predictions
