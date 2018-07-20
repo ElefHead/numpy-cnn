@@ -24,4 +24,6 @@ def set_network_name(name):
 
 
 def get_network_name():
+    if network_name is None:
+        raise RuntimeError("Model name not set, set name as 'model.set_name(<name>)'")
     return network_name
