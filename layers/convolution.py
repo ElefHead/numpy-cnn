@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+from os import path, makedirs
 
 from utilities.utils import pad_inputs
 from utilities.initializers import glorot_uniform
@@ -6,7 +8,7 @@ from utilities.settings import get_layer_num, inc_layer_num
 
 
 class Convolution:
-    def __init__(self, filters, kernel_shape=(3,3), padding='valid', stride=1, name=None):
+    def __init__(self, filters, kernel_shape=(3, 3), padding='valid', stride=1, name=None):
         self.params = {
             'filters': filters,
             'padding': padding,
@@ -23,6 +25,27 @@ class Convolution:
 
     def has_weights(self):
         return self.has_units
+
+    def save_weights(self, dump_path):
+        dump_cache = {
+            'cache': self.cache,
+            'grads': self.grads,
+            'momentum': self.momentum_cache,
+            'rmsprop': self.rmsprop_cache
+        }
+        save_path = path.join(dump_path, self.name+'.pickle')
+        makedirs(path.dirname(save_path), exist_ok=True)
+        with open(save_path, 'wb') as d:
+            pickle.dump(dump_cache, d)
+
+    def load_weights(self, dump_path):
+        read_path = path.join(dump_path, self.name+'.pickle')
+        with open(read_path, 'rb') as r:
+            dump_cache = pickle.load(r)
+        self.cache = dump_cache['cache']
+        self.grads = dump_cache['grads']
+        self.momentum_cache = dump_cache['momentum']
+        self.rmsprop_cache = dump_cache['rmsprop']
 
     def conv_single_step(self, input, W, b):
         '''
@@ -44,8 +67,6 @@ class Convolution:
         if self.name is None:
             self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
             inc_layer_num(self.type)
-
-        print(self.name)
 
         (num_data_points, prev_height, prev_width, prev_channels) = X.shape
         filter_shape_h, filter_shape_w = self.params['kernel_shape']

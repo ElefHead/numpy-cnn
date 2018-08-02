@@ -1,4 +1,7 @@
 import numpy as np
+import pickle
+from os import path, makedirs
+
 from utilities.initializers import he_normal
 from utilities.settings import get_layer_num, inc_layer_num
 
@@ -20,11 +23,31 @@ class FullyConnected:
     def has_weights(self):
         return self.has_units
 
+    def save_weights(self, dump_path):
+        dump_cache = {
+            'cache': self.cache,
+            'grads': self.grads,
+            'momentum': self.momentum_cache,
+            'rmsprop_cache': self.rmsprop_cache
+        }
+        save_path = path.join(dump_path, self.name+'.pickle')
+        makedirs(path.dirname(save_path), exist_ok=True)
+        with open(save_path, 'wb') as d:
+            pickle.dump(dump_cache, d)
+
+    def load_weights(self, dump_path):
+        read_path = path.join(dump_path, self.name+'.pickle')
+        with open(read_path, 'rb') as r:
+            dump_cache = pickle.load(r)
+        self.cache = dump_cache['cache']
+        self.grads = dump_cache['grads']
+        self.momentum_cache = dump_cache['momentum']
+        self.rmsprop_cache = dump_cache['rmsprop']
+
     def forward_propagate(self, X, save_cache=False):
         if self.name is None:
             self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
             inc_layer_num(self.type)
-
 
         if 'W' not in self.params:
             self.params['W'], self.params['b'] = he_normal((X.shape[0], self.units))

@@ -30,8 +30,6 @@ class Model:
         self.set_batch_size(batch_size)
         if save_model:
             self.set_name(self.name)
-            makedirs(path.dirname(get_models_path()), exist_ok=True)
-            makedirs(path.dirname(path.join(get_models_path(), self.name)), exist_ok=True)
 
         iter = 1
         for epoch in range(epochs):
@@ -51,6 +49,7 @@ class Model:
                 for layer in self.model:
                     if layer.has_weights():
                         layer.apply_grads(optimization=optimization, correct_bias=True, iter=iter)
+                        layer.save_weights(path.join(get_models_path(), self.name))
 
             iter += batch_size
 
