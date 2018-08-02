@@ -23,13 +23,19 @@ class Model:
     def set_name(self, name):
         set_network_name(name)
 
-    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam', save_model=True):
+    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam',
+              save_model=True, load_and_continue=False):
         if self.loss is None:
             raise RuntimeError("Set loss first using 'model.set_loss(<loss>)'")
 
         self.set_batch_size(batch_size)
         if save_model:
             self.set_name(self.name)
+
+        if load_and_continue:
+            for layer in self.model:
+                if layer.has_weights():
+                    layer.load_weights()
 
         iter = 1
         for epoch in range(epochs):
