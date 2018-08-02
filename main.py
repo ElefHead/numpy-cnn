@@ -8,15 +8,14 @@ from utilities.filereader import get_data
 from utilities.model import Model
 
 from loss.losses import CategoricalCrossEntropy
-from optimizers.adam_optimizer import AdamOptimizer
 
 import numpy as np
 np.random.seed(0)
 
 
 if __name__ == '__main__':
-    train_data, train_labels = get_data(num_samples=50000)
-    test_data, test_labels = get_data(num_samples=10000, dataset="testing")
+    train_data, train_labels = get_data(num_samples=500)
+    test_data, test_labels = get_data(num_samples=500, dataset="testing")
 
     train_data = train_data / 255
     test_data = test_data / 255
@@ -25,17 +24,17 @@ if __name__ == '__main__':
     print("Test data shape: {}, {}".format(test_data.shape, test_labels.shape))
 
     model = Model(
-        Convolution(filters=5, padding='same', name='cnn1'),
+        Convolution(filters=5, padding='same'),
         Elu(),
-        Pooling(mode='max', kernel_shape=(2, 2), stride=2, name='pooling1'),
+        Pooling(mode='max', kernel_shape=(2, 2), stride=2),
         Flatten(),
-        FullyConnected(units=10, name='full1'),
-        Softmax()
+        FullyConnected(units=10),
+        Softmax(),
+        name='cnn'
     )
 
     model.set_loss(CategoricalCrossEntropy)
-    model.set_optimizer(AdamOptimizer())
 
-    model.train(train_data, train_labels.T, epochs=5, save_model=True)
+    model.train(train_data, train_labels.T, epochs=5)
 
     print('Testing accuracy = {}'.format(model.evaluate(test_data, test_labels)))

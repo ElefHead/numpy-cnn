@@ -25,6 +25,7 @@ class FullyConnected:
             self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
             inc_layer_num(self.type)
 
+
         if 'W' not in self.params:
             self.params['W'], self.params['b'] = he_normal((X.shape[0], self.units))
         Z = np.dot(self.params['W'], X) + self.params['b']

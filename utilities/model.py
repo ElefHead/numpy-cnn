@@ -1,16 +1,18 @@
 import numpy as np
 
-from utilities.utils import get_batches, evaluate
-from utilities.settings import set_network_name
+from os import makedirs, path
 
+from utilities.utils import get_batches, evaluate
+from utilities.settings import set_network_name, get_models_path
 
 class Model:
-    def __init__(self, *model):
+    def __init__(self, *model, **kwargs):
         self.model = model
         self.num_classes = 0
         self.batch_size = 0
         self.loss = None
         self.optimizer = None
+        self.name = kwargs['name'] if 'name' in kwargs else None
 
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
@@ -18,20 +20,18 @@ class Model:
     def set_loss(self, loss):
         self.loss = loss
 
-    def set_optimizer(self, optimizer):
-        self.optimizer = optimizer
-
     def set_name(self, name):
         set_network_name(name)
 
-    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam'):
+    def train(self, data, labels, batch_size=256, epochs=50, optimization='adam', save_model=True):
         if self.loss is None:
             raise RuntimeError("Set loss first using 'model.set_loss(<loss>)'")
 
-        if self.optimizer is None:
-            raise RuntimeError("Set loss first using 'model.set_optimizer(<optimizer>)'")
-
         self.set_batch_size(batch_size)
+        if save_model:
+            self.set_name(self.name)
+            makedirs(path.dirname(get_models_path()), exist_ok=True)
+            makedirs(path.dirname(path.join(get_models_path(), self.name)), exist_ok=True)
 
         iter = 1
         for epoch in range(epochs):
@@ -39,7 +39,7 @@ class Model:
             for i, (x_batch, y_batch) in enumerate(get_batches(data, labels)):
                 batch_preds = x_batch.copy()
                 for num, layer in enumerate(self.model):
-                    batch_preds = layer.forward_propagate(batch_preds, layer_num=num, save_cache=True)
+                    batch_preds = layer.forward_propagate(batch_preds, save_cache=True)
                 dA = self.loss.compute_derivative(y_batch, batch_preds)
                 for layer in reversed(self.model):
                     dA = layer.back_propagate(dA)

@@ -45,6 +45,8 @@ class Convolution:
             self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
             inc_layer_num(self.type)
 
+        print(self.name)
+
         (num_data_points, prev_height, prev_width, prev_channels) = X.shape
         filter_shape_h, filter_shape_w = self.params['kernel_shape']
 

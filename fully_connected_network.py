@@ -7,6 +7,7 @@ from utilities.model import Model
 
 from loss.losses import CategoricalCrossEntropy
 
+
 import numpy as np
 np.random.seed(0)
 
@@ -30,11 +31,12 @@ if __name__ == '__main__':
         FullyConnected(units=200),
         Elu(),
         FullyConnected(units=10),
-        Softmax()
+        Softmax(),
+        name='fcn200'
     )
 
     model.set_loss(CategoricalCrossEntropy)
-    model.train(train_data, train_labels)
+    model.train(train_data, train_labels, batch_size=128, epochs=50)
 
     print('Testing accuracy = {}'.format(model.evaluate(test_data, test_labels)))
 
