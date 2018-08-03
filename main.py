@@ -6,7 +6,6 @@ from layers.activation import Elu, Softmax
 
 from utilities.filereader import get_data
 from utilities.model import Model
-from utilities.utils import evaluate
 
 from loss.losses import CategoricalCrossEntropy
 
@@ -36,7 +35,7 @@ if __name__ == '__main__':
 
     model.set_loss(CategoricalCrossEntropy)
 
-    model.train(train_data, train_labels.T, epochs=5)
-    prediction = model.predict(test_data)
+    # model.train(train_data, train_labels.T, epochs=2)
+    model.load_weights()
 
-    print('Testing accuracy = {}'.format(evaluate(test_labels.T, prediction)))
+    print('Testing accuracy = {}'.format(model.evaluate(test_data, test_labels)))

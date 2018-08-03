@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from os import path, makedirs
+from os import path, makedirs, remove
 
 from utilities.utils import pad_inputs
 from utilities.initializers import glorot_uniform
@@ -35,10 +35,14 @@ class Convolution:
         }
         save_path = path.join(dump_path, self.name+'.pickle')
         makedirs(path.dirname(save_path), exist_ok=True)
+        remove(save_path)
         with open(save_path, 'wb') as d:
             pickle.dump(dump_cache, d)
 
     def load_weights(self, dump_path):
+        if self.name is None:
+            self.name = '{}_{}'.format(self.type, get_layer_num(self.type))
+            inc_layer_num(self.type)
         read_path = path.join(dump_path, self.name+'.pickle')
         with open(read_path, 'rb') as r:
             dump_cache = pickle.load(r)

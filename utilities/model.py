@@ -23,6 +23,11 @@ class Model:
     def set_name(self, name):
         set_network_name(name)
 
+    def load_weights(self):
+        for layer in self.model:
+            if layer.has_weights():
+                layer.load_weights(path.join(get_models_path(), self.name))
+
     def train(self, data, labels, batch_size=256, epochs=50, optimization='adam',
               save_model=True, load_and_continue=False):
         if self.loss is None:
@@ -35,7 +40,7 @@ class Model:
         if load_and_continue:
             for layer in self.model:
                 if layer.has_weights():
-                    layer.load_weights()
+                    layer.load_weights(path.join(get_models_path(), self.name))
 
         iter = 1
         for epoch in range(epochs):
@@ -83,9 +88,9 @@ class Model:
     def evaluate(self, data, labels):
         predictions = self.predict(data)
         M, N = predictions.shape
-        if (M, N)  == labels.shape:
+        if (M, N) == labels.shape:
             return evaluate(labels, predictions)
         elif (N, M) == labels.shape:
-            return evaluate(labels, predictions.T)
+            return evaluate(labels.T, predictions)
         else:
             raise RuntimeError("Prediction and label shapes don't match")
