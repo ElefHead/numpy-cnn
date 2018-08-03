@@ -3,9 +3,9 @@ A numpy based CNN implementation for classifying images.
 
 ## Usage
 
-Follow the steps listed below for using this repository after cloning it.
-For examples, you can look at the code in [fully_connected_network.py](https://github.com/ElefHead/numpy-cnn/blob/master/fully_connected_network.py) and [cnn.py](https://github.com/ElefHead/numpy-cnn/blob/master/cnn.py).
-I placed the data inside a folder called data within the project folder.
+Follow the steps listed below for using this repository after cloning it.  
+For examples, you can look at the code in [fully_connected_network.py](https://github.com/ElefHead/numpy-cnn/blob/master/fully_connected_network.py) and [cnn.py](https://github.com/ElefHead/numpy-cnn/blob/master/cnn.py).  
+I placed the data inside a folder called data within the project folder.  
 
 1) Import the required layer classes from layers folder, for example
     ```python
