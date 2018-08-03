@@ -60,7 +60,9 @@ class Model:
                 for layer in self.model:
                     if layer.has_weights():
                         layer.apply_grads(optimization=optimization, correct_bias=True, iter=iter)
-                        layer.save_weights(path.join(get_models_path(), self.name))
+            for layer in self.model:
+                if layer.has_weights():
+                    layer.save_weights(path.join(get_models_path(), self.name))
 
             iter += batch_size
 

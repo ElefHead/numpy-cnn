@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from os import path, makedirs, removeg
+from os import path, makedirs, remove
 
 from utilities.initializers import he_normal
 from utilities.settings import get_layer_num, inc_layer_num
