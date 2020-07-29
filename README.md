@@ -1,6 +1,8 @@
 # Numpy CNN
 A numpy based CNN implementation for classifying images.
 
+**status: archived**
+
 ## Usage
 
 Follow the steps listed below for using this repository after cloning it.  
